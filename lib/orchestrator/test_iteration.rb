@@ -53,7 +53,7 @@ module Orchestrator
     end
 
     def test_data
-      location = "#{data_root_path}/#{track_slug}/runs/iteration_#{system_identifier}/iteration/report.json"
+      location = "#{data_root_path}/#{track_slug}/runs/iteration_#{system_identifier}/iteration/results.json"
       JSON.parse(File.read(location))
     rescue
       {}

@@ -13,7 +13,7 @@ module Orchestrator
 
         data_path = File.expand_path(File.dirname(__FILE__) + "/../tmp/test_runner_runtime/ruby/runs/iteration_#{Time.now.to_i}_#{iteration_id}/iteration/")
         FileUtils.mkdir_p(data_path)
-        File.open(data_path + "/report.json", "w") { |f| f << results.to_json }
+        File.open(data_path + "/results.json", "w") { |f| f << results.to_json }
 
         propono = mock
         propono.expects(:publish).with(:iteration_tested, {
