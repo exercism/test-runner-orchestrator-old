@@ -2,31 +2,31 @@ module Orchestrator
 
   VALID_TRACKS = %w{ruby}
 
-  class TestIteration
+  class TestSubmission
     include Mandate
 
-    initialize_with :track_slug, :exercise_slug, :iteration_id
+    initialize_with :track_slug, :exercise_slug, :submission_id
 
     def call
       unless VALID_TRACKS.include?(track_slug)
-        return propono.publish(:iteration_tested, {
-          iteration_id: iteration_id,
+        return propono.publish(:submission_tested, {
+          submission_id: submission_id,
           status: :no_test_runner
         })
       end
 
-      cmd = %Q{test_iteration #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}}
+      cmd = %Q{test_submission #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}}
       p "Running #{cmd}"
 
       if Kernel.system(cmd)
-        propono.publish(:iteration_tested, {
-          iteration_id: iteration_id,
+        propono.publish(:submission_tested, {
+          submission_id: submission_id,
           status: :success,
           results: test_data
         })
       else
-        propono.publish( :iteration_tested, {
-          iteration_id: iteration_id,
+        propono.publish( :submission_tested, {
+          submission_id: submission_id,
           status: :fail
         })
       end
@@ -36,11 +36,11 @@ module Orchestrator
 
     memoize
     def system_identifier
-      "#{Time.now.to_i}_#{iteration_id}"
+      "#{Time.now.to_i}_#{submission_id}"
     end
 
     def s3_url
-      "s3://#{s3_bucket}/#{env}/iterations/#{iteration_id}"
+      "s3://#{s3_bucket}/#{env}/submissions/#{submission_id}"
     end
 
     def env
@@ -49,11 +49,11 @@ module Orchestrator
 
     def s3_bucket
       creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[env]
-      creds['aws_iterations_bucket']
+      creds['aws_submissions_bucket']
     end
 
     def test_data
-      location = "#{data_root_path}/#{track_slug}/runs/iteration_#{system_identifier}/iteration/results.json"
+      location = "#{data_root_path}/#{track_slug}/runs/submission_#{system_identifier}/submission/results.json"
       JSON.parse(File.read(location))
     rescue
       {}

@@ -1,16 +1,16 @@
 module Orchestrator
-  class ListenForNewIterations
+  class ListenForNewSubmissions
     include Mandate
 
     def call
-      propono.listen(:new_iteration) do |message|
+      propono.listen(:new_submission) do |message|
         p "Received message"
         p message
 
         track_slug = message[:track_slug]
         exercise_slug = message[:exercise_slug]
-        iteration_id = message[:iteration_id]
-        TestIteration.(track_slug, exercise_slug, iteration_id)
+        submission_id = message[:submission_id]
+        TestSubmission.(track_slug, exercise_slug, submission_id)
       end
     end
 
