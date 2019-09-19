@@ -15,7 +15,7 @@ module Orchestrator
         })
       end
 
-      cmd = %Q{test_submission #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}}
+      cmd = %Q{invoke_exercism_runner #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}}
       p "Running #{cmd}"
 
       if Kernel.system(cmd)
@@ -53,7 +53,7 @@ module Orchestrator
     end
 
     def test_data
-      location = "#{data_root_path}/#{track_slug}/runs/submission_#{system_identifier}/submission/results.json"
+      location = "#{data_root_path}/#{track_slug}/runs/submission_#{system_identifier}/output/results.json"
       JSON.parse(File.read(location))
     rescue
       {}

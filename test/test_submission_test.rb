@@ -11,9 +11,9 @@ module Orchestrator
 
         s3_url = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
 
-        data_path = File.expand_path(File.dirname(__FILE__) + "/../tmp/test_runner_runtime/ruby/runs/submission_#{Time.now.to_i}_#{submission_id}/submission/")
-        FileUtils.mkdir_p(data_path)
-        File.open(data_path + "/results.json", "w") { |f| f << results.to_json }
+        data_path = File.expand_path(File.dirname(__FILE__) + "/../tmp/test_runner_runtime/ruby/runs/submission_#{Time.now.to_i}_#{submission_id}")
+        FileUtils.mkdir_p(data_path + "/output")
+        File.open(data_path + "/output/results.json", "w") { |f| f << results.to_json }
 
         propono = mock
         propono.expects(:publish).with(:submission_tested, {
@@ -23,7 +23,7 @@ module Orchestrator
         })
         Propono.expects(:configure_client).returns(propono)
 
-        Kernel.expects(:system).with(%Q{test_submission ruby two-fer #{s3_url} #{Time.now.to_i}_#{submission_id}}).returns(true)
+        Kernel.expects(:system).with(%Q{invoke_exercism_runner ruby two-fer #{s3_url} #{Time.now.to_i}_#{submission_id}}).returns(true)
         Orchestrator::TestSubmission.("ruby", "two-fer", submission_id)
       end
     end
@@ -40,7 +40,7 @@ module Orchestrator
         })
         Propono.expects(:configure_client).returns(propono)
 
-        Kernel.expects(:system).with(%Q{test_submission ruby two-fer #{s3_url} #{Time.now.to_i}_#{submission_id}}).returns(false)
+        Kernel.expects(:system).with(%Q{invoke_exercism_runner ruby two-fer #{s3_url} #{Time.now.to_i}_#{submission_id}}).returns(false)
         Orchestrator::TestSubmission.("ruby", "two-fer", submission_id)
       end
     end
