@@ -12,8 +12,10 @@ module Orchestrator
         s3_url = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
 
         data_path = File.expand_path(File.dirname(__FILE__) + "/../tmp/test_runner_runtime/ruby/runs/submission_#{Time.now.to_i}_#{submission_id}")
-        FileUtils.mkdir_p(data_path + "/output")
-        File.open(data_path + "/output/results.json", "w") { |f| f << results.to_json }
+
+        # "iteration" here is temporary
+        FileUtils.mkdir_p(data_path + "/iteration/output")
+        File.open(data_path + "/iteration/output/results.json", "w") { |f| f << results.to_json }
 
         propono = mock
         propono.expects(:publish).with(:submission_tested, {
