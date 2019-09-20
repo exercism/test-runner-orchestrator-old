@@ -17,15 +17,16 @@ module Orchestrator
 
       cmd = %Q{invoke_exercism_runner #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}}
       p "Running #{cmd}"
+      Kernel.system(cmd)
 
-      if Kernel.system(cmd)
+      if !test_data.empty?
         propono.publish(:submission_tested, {
           submission_id: submission_id,
           status: :success,
           results: test_data
         })
       else
-        propono.publish( :submission_tested, {
+        propono.publish(:submission_tested, {
           submission_id: submission_id,
           status: :fail
         })
