@@ -15,9 +15,7 @@ module Orchestrator
         })
       end
 
-      cmd = %Q{invoke_exercism_runner #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}}
-      p "Running #{cmd}"
-      Kernel.system(cmd)
+      invoke_test_runner!
 
       if !test_data.empty?
         propono.publish(:submission_tested, {
@@ -36,12 +34,32 @@ module Orchestrator
     private
 
     memoize
+    def invoke_test_runner!
+      case env
+      when "development"
+        Bundler.with_clean_env do
+          cmd = %Q{cd ../test-runner-dev-invoker && bin/run.sh #{s3_path} #{data_path}}
+          p cmd
+          Kernel.system(cmd)
+        end
+      else
+        cmd = "invoke_exercism_runner #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}"
+        p "Running: cmd"
+        Kernel.system(cmd)
+      end
+    end
+
+    memoize
     def system_identifier
       "#{Time.now.to_i}_#{submission_id}"
     end
 
     def s3_url
-      "s3://#{s3_bucket}/#{env}/submissions/#{submission_id}"
+      "s3://#{s3_bucket}/#{s3_path}"
+    end
+
+    def s3_path
+      "#{env}/submissions/#{submission_id}"
     end
 
     def env
@@ -55,10 +73,14 @@ module Orchestrator
 
     def test_data
       # "iteration" here is temporary
-      location = "#{data_root_path}/#{track_slug}/runs/submission_#{system_identifier}/iteration/output/results.json"
+      location = "#{data_path}/iteration/output/results.json"
       JSON.parse(File.read(location))
     rescue
       {}
+    end
+
+    def data_path
+      "#{data_root_path}/#{track_slug}/runs/submission_#{system_identifier}"
     end
 
     def data_root_path
