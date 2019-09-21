@@ -13,7 +13,8 @@ module Propono
       config.queue_region = creds["aws_region"]
       config.queue_suffix = creds["aws_queue_suffix"] || ""
       config.application_name = creds["application_name"]
-      # config.logger = Rails.logger
+
+      config.slow_queue_enabled = false
     end
   end
 end
