@@ -15,9 +15,9 @@ module Orchestrator
         })
       end
 
-      invoke_test_runner!
+      test_data = invoke_test_runner!
 
-      if !test_data.empty?
+      if test_data && !test_data.empty?
         propono.publish(:submission_tested, {
           submission_id: submission_id,
           status: :success,
@@ -37,24 +37,32 @@ module Orchestrator
     def invoke_test_runner!
       case env
       when "development"
-        Bundler.with_clean_env do
-          cmd = %Q{cd ../test-runner-dev-invoker && bin/run.sh #{s3_path} #{data_path}}
-          p cmd
-          Kernel.system(cmd)
-        end
+        invoke_development_test_runner!
       else
-        cmd = "invoke_exercism_runner #{track_slug} #{exercise_slug} #{s3_url} #{system_identifier}"
-        p "Running: cmd"
-        Kernel.system(cmd)
+        invoke_production_test_runner!
       end
     end
 
-    memoize
-    def system_identifier
-      "#{Time.now.to_i}_#{submission_id}"
+    def invoke_development_test_runner!
+      PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+
+      #Bundler.with_clean_env do
+      #  cmd = %Q{cd ../test-runner-dev-invoker && bin/run.sh #{s3_path} #{data_path}}
+      #  p cmd
+      #  Kernel.system(cmd)
+      #end
     end
 
-    def s3_url
+    def invoke_production_test_runner!
+      PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+    end
+
+    memoize
+    def test_run_id
+      "#{Time.now.to_i}_#{submission_id}_#{SecureRandom.hex(5)}"
+    end
+
+    def s3_uri
       "s3://#{s3_bucket}/#{s3_path}"
     end
 
@@ -80,7 +88,7 @@ module Orchestrator
     end
 
     def data_path
-      "#{data_root_path}/#{track_slug}/runs/submission_#{system_identifier}"
+      "#{data_root_path}/#{track_slug}/runs/submission_#{test_run_id}"
     end
 
     def data_root_path
