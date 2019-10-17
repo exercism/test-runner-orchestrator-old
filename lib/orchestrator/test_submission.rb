@@ -71,7 +71,7 @@ module Orchestrator
     end
 
     def env
-      ENV["env"] || "development"
+      ENV["ENV"] || "development"
     end
 
     def s3_bucket

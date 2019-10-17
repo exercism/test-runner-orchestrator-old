@@ -28,7 +28,7 @@ module Orchestrator
         container_version: "b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb",
       }
       recv_result = 1
-      results = {"some" => "response"}
+      result = {"some" => "response"}
 
       zmq_socket = mock
       zmq_socket.expects(:setsockopt).with(ZMQ::LINGER, 0)
@@ -36,7 +36,7 @@ module Orchestrator
       zmq_socket.expects(:connect).with(address)
       zmq_socket.expects(:send_string).with(msg.to_json)
       zmq_socket.expects(:recv_string).with {|response|
-        response << {"status": "all good", "results": results}.to_json
+        response << {"status": "all good", "result": result}.to_json
       }.returns(recv_result)
       zmq_socket.expects(:close)
 
@@ -45,7 +45,7 @@ module Orchestrator
       ZMQ::Context.expects(:new).with(1).returns(zmq_context)
 
       client = PipelineClient.new(address: address)
-      assert_equal results, client.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+      assert_equal result, client.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
     end
   end
 end
