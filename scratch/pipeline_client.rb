@@ -31,6 +31,7 @@ class PipelineClient
   end
 
   private
+
   def open_socket
     @socket = context.socket(ZMQ::REQ)
     @socket.setsockopt(ZMQ::LINGER, 0)
