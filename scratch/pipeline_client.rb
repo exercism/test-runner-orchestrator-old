@@ -30,12 +30,27 @@ class PipelineClient
     send_msg(msg, 10000)
   end
 
-  private 
-
+  private
   def open_socket
     @socket = context.socket(ZMQ::REQ)
     @socket.setsockopt(ZMQ::LINGER, 0)
     @socket.connect(address)
+  end
+
+  def close_socket
+    @socket.close
+  end
+
+  def send_msg(msg, timeout)
+    socket.setsockopt(ZMQ::RCVTIMEO, timeout*1000)
+    send_result = socket.send_string(msg)
+    response = ""
+    recv_result = socket.recv_string(response)
+    puts recv_result
+    puts response
+    raise("RCV timeout") if recv_result < 0
+    parsed = JSON.parse(response)
+    return parsed
   end
 
 end
