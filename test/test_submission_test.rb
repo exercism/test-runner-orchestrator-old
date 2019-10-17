@@ -6,16 +6,14 @@ module Orchestrator
 
     def test_calls_system_and_propono_with_the_correct_params
       Timecop.freeze do
+        track_slug = "ruby"
+        exercise_slug = "two-fer"
         submission_id = SecureRandom.uuid
         results = {"foo" => "bar"}
-
-        s3_url = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
-
-        data_path = File.expand_path(File.dirname(__FILE__) + "/../tmp/test_runner_runtime/ruby/runs/submission_#{Time.now.to_i}_#{submission_id}")
-
-        # "iteration" here is temporary
-        FileUtils.mkdir_p(data_path + "/iteration/output")
-        File.open(data_path + "/iteration/output/results.json", "w") { |f| f << results.to_json }
+        s3_uri = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
+        hex = "12345678"
+        SecureRandom.expects(:hex).with(5).returns(hex)
+        test_run_id = "#{Time.now.to_i}_#{submission_id}_#{hex}"
 
         propono = mock
         propono.expects(:publish).with(:submission_tested, {
@@ -25,15 +23,20 @@ module Orchestrator
         })
         Propono.expects(:configure_client).returns(propono)
 
-        Kernel.expects(:system).with(%Q{invoke_exercism_runner ruby two-fer #{s3_url} #{Time.now.to_i}_#{submission_id}}).returns(true)
-        Orchestrator::TestSubmission.("ruby", "two-fer", submission_id)
+        PipelineClient.expects(:run_tests).with(track_slug, exercise_slug, test_run_id, s3_uri).returns(results)
+        Orchestrator::TestSubmission.(track_slug, exercise_slug, submission_id)
       end
     end
 
     def test_calls_system_and_propono_with_the_correct_params_when_fails
       Timecop.freeze do
+        track_slug = "ruby"
+        exercise_slug = "two-fer"
         submission_id = SecureRandom.uuid
-        s3_url = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
+        s3_uri = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
+        hex = "12345678"
+        SecureRandom.expects(:hex).with(5).returns(hex)
+        test_run_id = "#{Time.now.to_i}_#{submission_id}_#{hex}"
 
         propono = mock
         propono.expects(:publish).with(:submission_tested, {
@@ -42,7 +45,7 @@ module Orchestrator
         })
         Propono.expects(:configure_client).returns(propono)
 
-        Kernel.expects(:system).with(%Q{invoke_exercism_runner ruby two-fer #{s3_url} #{Time.now.to_i}_#{submission_id}}).returns(false)
+        PipelineClient.expects(:run_tests).with(track_slug, exercise_slug, test_run_id, s3_uri).returns(nil)
         Orchestrator::TestSubmission.("ruby", "two-fer", submission_id)
       end
     end

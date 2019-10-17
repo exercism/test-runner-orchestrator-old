@@ -16,6 +16,11 @@ GEM
       aws-sigv4 (~> 1.1)
     aws-sigv4 (1.1.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
+    ffi (1.11.1)
+    ffi-rzmq (2.0.7)
+      ffi-rzmq-core (>= 1.0.7)
+    ffi-rzmq-core (1.0.7)
+      ffi
     jmespath (1.4.0)
     mandate (0.2.0)
     metaclass (0.0.4)
@@ -33,6 +38,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
+  ffi-rzmq
   mandate
   minitest (~> 5.0.8)
   mocha
@@ -41,4 +47,4 @@ DEPENDENCIES
   timecop
 
 BUNDLED WITH
-   2.0.1
+   2.0.2
