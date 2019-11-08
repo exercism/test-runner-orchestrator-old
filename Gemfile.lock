@@ -27,6 +27,7 @@ GEM
     minitest (5.0.8)
     mocha (1.8.0)
       metaclass (~> 0.0.1)
+    parallel (1.18.0)
     propono (2.2.0)
       aws-sdk-sns
       aws-sdk-sqs
@@ -42,6 +43,7 @@ DEPENDENCIES
   mandate
   minitest (~> 5.0.8)
   mocha
+  parallel
   propono
   rake
   timecop

@@ -29,9 +29,8 @@ class PipelineClient
 
     # Get a response. Raises if fails
     resp = send_msg(params.to_json, TIMEOUT_SECS)
-
     # Parse the response and return the results hash
-    JSON.parse(resp)["results"]
+    JSON.parse(resp)
   ensure
     close_socket
   end
