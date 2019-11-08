@@ -4,11 +4,11 @@ require "orchestrator"
 
 require "parallel"
 
-s3_uri = "s3://exercism-submissions/production/submissions/77/"
+s3_uri = "s3://exercism-submissions/production/submissions/96/"
 result = PipelineClient.run_tests("ruby", "two-fer", "test-#{Time.now.to_i}", s3_uri)
 
 
-results = Parallel.map( 1...20, in_threads: 10) do |id|
+results = Parallel.map( 1...2, in_threads: 10) do |id|
   attempt = 0
   begin
     attempt += 1
