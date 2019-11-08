@@ -6,7 +6,7 @@ require 'securerandom'
 class PipelineClient
 
   TIMEOUT_SECS = 10
-  ADDRESS = "tcp://ec2-34-245-83-27.eu-west-1.compute.amazonaws.com:5555"
+  ADDRESS = "tcp://analysis-router.exercism.io:5555"
 
   def self.run_tests(*args)
     new.run_tests(*args)
