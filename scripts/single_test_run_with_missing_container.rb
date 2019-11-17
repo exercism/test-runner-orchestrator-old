@@ -6,12 +6,12 @@ require "parallel"
 
 s3_uri = "s3://exercism-submissions/production/submissions/96"
 
-container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
+container_version = "UNKNOWN"
 
 client = PipelineClient.new
 test_runner = TestRunner.new(client, "ruby")
-test_runner.configure_version(container_version)
+test_runner.select_version(container_version)
 data = test_runner.run_tests("two-fer", s3_uri)
 
 puts "-------------------"
-puts data["result"]["result"]
+puts data
