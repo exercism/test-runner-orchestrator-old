@@ -3,6 +3,60 @@ require 'json'
 require 'yaml'
 require 'securerandom'
 
+class ContainerRunnerError < RuntimeError
+end
+
+class ContainerTimeoutError < ContainerRunnerError
+end
+
+class ContainerWorkerUnavailableError < ContainerRunnerError
+end
+
+class FailedRequest < ContainerRunnerError
+end
+
+class TestRunner
+
+  attr_reader :pipeline_client, :container_version_slug, :language_slug
+
+  def initialize(pipeline_client, language_slug, container_version_slug)
+    @pipeline_client = pipeline_client
+    @language_slug = language_slug
+    @container_version_slug = container_version_slug
+    @backoff_delay_seconds = 3
+    @max_retry_attempts = 3
+  end
+
+  def ensure_container_deployed!
+    pipeline_client.enable_container(language_slug, :test_runners, container_version_slug)
+  end
+
+  def run_tests(exercise_slug, s3_uri)
+    attempt = 0
+    begin
+      attempt += 1
+      run_identity = "test-#{Time.now.to_i}"
+      result = pipeline_client.run_tests(language_slug, exercise_slug, run_identity,
+                                      s3_uri, container_version_slug)
+      return result
+    rescue ContainerTimeoutError => e
+      puts e
+      if attempt <= @max_retry_attempts
+        puts "backoff #{attempt}"
+        sleep @backoff_delay_seconds * attempt
+        retry
+      end
+    rescue ContainerWorkerUnavailableError => e
+      puts e
+      if attempt <= @max_retry_attempts
+        puts "backoff #{attempt}"
+        sleep @backoff_delay_seconds * attempt
+        retry
+      end
+    end
+  end
+end
+
 class PipelineClient
 
   TIMEOUT_SECS = 20
@@ -80,13 +134,27 @@ class PipelineClient
     }, 300)
   end
 
-  def deploy(track_slug, container_type, new_version)
+  def enable_container(track_slug, container_type, new_version)
     send_recv({
       action: :deploy_container_version,
       track_slug: track_slug,
       channel: container_type,
       new_version: new_version
     }, 300)
+  end
+
+  def unload_container(track_slug, container_type, new_version)
+    send_recv({
+      action: :unload_container_version,
+      track_slug: track_slug,
+      channel: container_type,
+      new_version: new_version
+    }, 300)
+  end
+
+  def close_socket
+    socket.setsockopt(ZMQ::LINGER, 0)
+    socket.close
   end
 
   private
@@ -99,7 +167,7 @@ class PipelineClient
     # Parse the response and return the results hash
     parsed = JSON.parse(resp)
     puts parsed
-    raise "failed request" unless parsed["status"]["ok"]
+    # raise FailedRequest.new("failed request") unless parsed["status"]["ok"]
     parsed
   end
 
@@ -108,10 +176,6 @@ class PipelineClient
       socket.setsockopt(ZMQ::LINGER, 0)
       socket.connect(address)
     end
-  end
-
-  def close_socket
-    socket.close
   end
 
   def send_msg(msg, timeout)
@@ -123,12 +187,12 @@ class PipelineClient
     recv_result = socket.recv_string(response = "")
 
     # Guard against errors
-    raise TestRunnerTimeoutError if recv_result < 0
+    raise ContainerTimeoutError if recv_result < 0
     case recv_result
     when 20
-      raise TestRunnerTimeoutError
+      raise ContainerTimeoutError
     when 31
-      raise TestRunnerWorkerUnavailableError
+      raise ContainerWorkerUnavailableError
     end
 
     # Return the response
