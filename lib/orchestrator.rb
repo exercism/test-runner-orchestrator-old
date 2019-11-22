@@ -1,5 +1,6 @@
 require "mandate"
 require "propono"
+require "rest-client"
 
 require "ext/propono"
 require "orchestrator/pipeline_client"

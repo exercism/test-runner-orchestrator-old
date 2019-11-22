@@ -10,6 +10,8 @@ gem "rake"
 gem "mocha"
 gem "minitest", "~> 5.0.8"
 gem 'timecop'
+gem 'sinatra'
+gem 'sinatra-contrib'
 
 gem 'mandate'
 gem 'propono'

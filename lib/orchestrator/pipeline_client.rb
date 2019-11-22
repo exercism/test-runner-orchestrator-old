@@ -170,7 +170,7 @@ class PipelineClient
     resp = send_msg(payload.to_json, timeout)
     # Parse the response and return the results hash
     parsed = JSON.parse(resp)
-    puts parsed
+    pp parsed
     # raise FailedRequest.new("failed request") unless parsed["status"]["ok"]
     parsed
   end

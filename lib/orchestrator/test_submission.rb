@@ -5,12 +5,12 @@ module Orchestrator
   class TestSubmission
     include Mandate
 
-    initialize_with :track_slug, :exercise_slug, :submission_id
+    initialize_with :track_slug, :exercise_slug, :submission_uuid
 
     def call
       unless VALID_TRACKS.include?(track_slug)
         return propono.publish(:submission_tested, {
-          submission_id: submission_id,
+          submission_uuid: submission_uuid,
           status: :no_test_runner
         })
       end
@@ -18,14 +18,14 @@ module Orchestrator
       test_data = invoke_test_runner!
 
       if test_data && !test_data.empty?
-        propono.publish(:submission_tested, {
-          submission_id: submission_id,
+        path = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
+        RestClient.post(path, {
           status: :success,
           results: test_data
         })
       else
         propono.publish(:submission_tested, {
-          submission_id: submission_id,
+          submission_uuid: submission_uuid,
           status: :fail
         })
       end
@@ -37,7 +37,8 @@ module Orchestrator
     def invoke_test_runner!
       case env
       when "development"
-        invoke_development_test_runner!
+        #invoke_development_test_runner!
+        invoke_production_test_runner!
       else
         invoke_production_test_runner!
       end
@@ -54,12 +55,21 @@ module Orchestrator
     end
 
     def invoke_production_test_runner!
-      PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+      container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
+
+      client = PipelineClient.new(address: "tcp://analysis-router.exercism.io:5555")
+      test_runner = TestRunner.new(client, track_slug)
+      test_runner.configure_version(container_version)
+      data = test_runner.run_tests(exercise_slug, s3_uri)
+      res = data["result"]["result"]
+      res
+
+      #PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
     end
 
     memoize
     def test_run_id
-      "#{Time.now.to_i}_#{submission_id}_#{SecureRandom.hex(5)}"
+      "#{Time.now.to_i}_#{submission_uuid}_#{SecureRandom.hex(5)}"
     end
 
     def s3_uri
@@ -67,7 +77,7 @@ module Orchestrator
     end
 
     def s3_path
-      "#{env}/submissions/#{submission_id}"
+      "#{env}/testing/#{submission_uuid}"
     end
 
     def env
