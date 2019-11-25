@@ -3,18 +3,6 @@ require 'json'
 
 module Orchestrator
   class PipelineClientTest < Minitest::Test
-=begin
-    def test_shortcut_method_works
-      arg1 = mock
-      arg2 = mock
-      client = mock
-      client.expects(:run_tests).with(arg1, arg2)
-      client.expects(:close_socket)
-      PipelineClient.expects(:new).returns(client)
-      PipelineClient.run_tests(arg1, arg2)
-    end
-=end
-
     def test_things_run_as_expected
       track_slug = "ruby"
       exercise_slug = "two-fer"

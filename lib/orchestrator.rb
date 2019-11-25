@@ -1,3 +1,6 @@
+STDOUT.sync = true
+STDERR.sync = true
+
 require "mandate"
 require "propono"
 require "rest-client"
@@ -14,7 +17,6 @@ require "orchestrator/test_runner"
 require "orchestrator/test_runner_thread_pool"
 require "orchestrator/publish_message"
 require "orchestrator/test_submission"
-require "orchestrator/listen_for_new_submissions"
 
 class TestRunnerError < RuntimeError
 end
@@ -26,10 +28,6 @@ class TestRunnerWorkerUnavailableError < TestRunnerError
 end
 
 module Orchestrator
-  def self.listen
-    ListenForNewSubmissions.()
-  end
-
   def self.env
     @env ||= (ENV["ENV"] || "development")
   end

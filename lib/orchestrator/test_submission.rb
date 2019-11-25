@@ -37,21 +37,16 @@ module Orchestrator
     def invoke_test_runner!
       data = test_runner.run_tests(exercise_slug, s3_uri)
       res = data&.fetch("result")&.fetch("result")
-      puts res
+      puts "#{submission_uuid.split('-').last}: Results #{res}"
       res
     end
 
     def s3_uri
-      "s3://#{s3_bucket}/#{s3_path}"
-    end
-
-    def s3_path
-      "#{Orchestrator.env}/testing/#{submission_uuid}"
-    end
-
-    def s3_bucket
       creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[Orchestrator.env]
-      creds['aws_submissions_bucket']
+      bucket = creds['aws_submissions_bucket']
+      path = "#{Orchestrator.env}/testing/#{submission_uuid}"
+
+      "s3://#{bucket}/#{path}"
     end
 
     memoize
@@ -60,4 +55,3 @@ module Orchestrator
     end
   end
 end
-

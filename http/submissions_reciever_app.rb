@@ -4,9 +4,12 @@ require "orchestrator"
 
 LANGUAGES = %w{ruby}
 class SubmissionsReceiverApp < Sinatra::Base
-  def initialize
-    @threadpools = LANGUAGES.each_with_object({}) {|lang,h| h[lang] = TestRunnerThreadPool.new(lang) }
-    super
+  def initialize(*args)
+    @threadpools = LANGUAGES.each_with_object({}) do |lang,h|
+      h[lang] = TestRunnerThreadPool.new(lang)
+    end
+
+    super(*args)
   end
 
   post '/submissions' do
@@ -23,4 +26,3 @@ class SubmissionsReceiverApp < Sinatra::Base
   private
   attr_reader :threadpools
 end
-

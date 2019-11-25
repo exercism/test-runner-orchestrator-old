@@ -18,10 +18,6 @@ class PipelineClient
   # ADDRESS = "tcp://analysis-router.exercism.io:5555"
   ADDRESS = "tcp://localhost:5555"
 
-  def self.run_tests(*args)
-    new.run_tests(*args)
-  end
-
   def initialize(address: ADDRESS)
     @address = address
     @socket = open_socket
@@ -124,6 +120,9 @@ class PipelineClient
     #pp parsed
     # raise FailedRequest.new("failed request") unless parsed["status"]["ok"]
     parsed
+  rescue => e
+    puts "Send_recv failed with #{e.message}"
+    raise
   end
 
   def open_socket
@@ -142,11 +141,17 @@ class PipelineClient
     recv_result = socket.recv_string(response = "")
 
     # Guard against errors
-    raise ContainerTimeoutError if recv_result < 0
+    if recv_result < 0
+      puts "Errored with error: #{recv_result} | #{ZMQ::Util.errno}"
+      raise ContainerTimeoutError
+    end
+
     case recv_result
     when 20
+      puts "Errored with error: 20 | #{ZMQ::Util.errno}"
       raise ContainerTimeoutError
     when 31
+      puts "Errored with error: 32 | #{ZMQ::Util.errno}"
       raise ContainerWorkerUnavailableError
     end
 
