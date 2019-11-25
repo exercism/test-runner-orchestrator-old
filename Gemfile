@@ -12,6 +12,8 @@ gem "minitest", "~> 5.0.8"
 gem 'timecop'
 gem 'sinatra'
 gem 'sinatra-contrib'
+gem 'concurrent-ruby'
+gem 'rest-client'
 
 gem 'mandate'
 gem 'propono'

@@ -17,19 +17,29 @@ GEM
     aws-sigv4 (1.1.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
     backports (3.15.0)
+    concurrent-ruby (1.1.5)
+    domain_name (0.5.20190701)
+      unf (>= 0.0.5, < 1.0.0)
     ffi (1.11.1)
     ffi-rzmq (2.0.7)
       ffi-rzmq-core (>= 1.0.7)
     ffi-rzmq-core (1.0.7)
       ffi
+    http-accept (1.7.0)
+    http-cookie (1.0.3)
+      domain_name (~> 0.5)
     jmespath (1.4.0)
     mandate (0.2.0)
     metaclass (0.0.4)
+    mime-types (3.3)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2019.1009)
     minitest (5.0.8)
     mocha (1.8.0)
       metaclass (~> 0.0.1)
     multi_json (1.14.1)
     mustermann (1.0.3)
+    netrc (0.11.0)
     parallel (1.18.0)
     propono (2.2.0)
       aws-sdk-sns
@@ -38,6 +48,11 @@ GEM
     rack-protection (2.0.7)
       rack
     rake (12.3.2)
+    rest-client (2.1.0)
+      http-accept (>= 1.7.0, < 2.0)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 4.0)
+      netrc (~> 0.8)
     sinatra (2.0.7)
       mustermann (~> 1.0)
       rack (~> 2.0)
@@ -52,12 +67,16 @@ GEM
       tilt (~> 2.0)
     tilt (2.0.10)
     timecop (0.9.1)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.6)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   bundler
+  concurrent-ruby
   ffi-rzmq
   mandate
   minitest (~> 5.0.8)
@@ -65,6 +84,7 @@ DEPENDENCIES
   parallel
   propono
   rake
+  rest-client
   sinatra
   sinatra-contrib
   timecop

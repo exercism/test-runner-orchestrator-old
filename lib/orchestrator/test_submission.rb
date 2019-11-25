@@ -5,7 +5,7 @@ module Orchestrator
   class TestSubmission
     include Mandate
 
-    initialize_with :track_slug, :exercise_slug, :submission_uuid
+    initialize_with :test_runner, :track_slug, :exercise_slug, :submission_uuid
 
     def call
       unless VALID_TRACKS.include?(track_slug)
@@ -55,16 +55,10 @@ module Orchestrator
     end
 
     def invoke_production_test_runner!
-      container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
-
-      client = PipelineClient.new(address: "tcp://analysis-router.exercism.io:5555")
-      test_runner = TestRunner.new(client, track_slug)
-      test_runner.configure_version(container_version)
       data = test_runner.run_tests(exercise_slug, s3_uri)
       res = data["result"]["result"]
+      puts res
       res
-
-      #PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
     end
 
     memoize
