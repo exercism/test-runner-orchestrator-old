@@ -25,10 +25,10 @@ class PipelineClient
     # CCARE - when do we actually want to close the socket?
     # Is it after each send_recv, or just after the tests are
     # run, or when the pipeline client is GC'd?
-    ObjectSpace.define_finalizer(self, proc {
-      socket.setsockopt(ZMQ::LINGER, 0)
-      socket.close
-    })
+    #ObjectSpace.define_finalizer(self, proc {
+    #  socket.setsockopt(ZMQ::LINGER, 0)
+    #  socket.close
+    #})
   end
 
   def restart_workers!

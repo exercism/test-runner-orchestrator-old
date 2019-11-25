@@ -4,7 +4,7 @@
 class TestRunnerThreadPool
   def initialize(track_slug)
     @track_slug = track_slug
-    @pipeline_clients = Concurrent::Array.new
+    #@pipeline_clients = Concurrent::Array.new
     @threadpool = Concurrent::FixedThreadPool.new(1, max_queue: 0, idletime: 60*60)
     @test_runner_container = Concurrent::ThreadLocalVar.new { initialize_test_runner }
 
@@ -18,6 +18,9 @@ class TestRunnerThreadPool
 
   def test_submission(exercise_slug, uuid)
     threadpool.post do
+      #puts "#{uuid.split('-').last}: Sleeping"
+      #sleep(5)
+      puts "#{uuid.split('-').last}: Initializing"
       retried = false
       begin
         Orchestrator::TestSubmission.(test_runner_container.value, track_slug, exercise_slug, uuid)
@@ -46,8 +49,8 @@ class TestRunnerThreadPool
 
   def initialize_pipeline_client
     address = "tcp://analysis-router.exercism.io:5555"#?topic=#{track_slug}"
-    PipelineClient.new(address: address).tap do |client|
-      pipeline_clients.push(client)
-    end
+    PipelineClient.new(address: address)#.tap do |client|
+    #  pipeline_clients.push(client)
+    #end
   end
 end

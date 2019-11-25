@@ -28,6 +28,17 @@ class TestRunnerWorkerUnavailableError < TestRunnerError
 end
 
 module Orchestrator
+  def self.setup!
+    languages = %w{ruby}
+    @threadpools = languages.each_with_object({}) do |lang,h|
+      h[lang] = TestRunnerThreadPool.new(lang)
+    end
+  end
+
+  def self.threadpools
+    @threadpools
+  end
+
   def self.env
     @env ||= (ENV["ENV"] || "development")
   end
