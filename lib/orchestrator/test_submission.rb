@@ -46,15 +46,11 @@ module Orchestrator
     end
 
     def s3_path
-      "#{env}/testing/#{submission_uuid}"
-    end
-
-    def env
-      ENV["ENV"] || "development"
+      "#{Orchestrator.env}/testing/#{submission_uuid}"
     end
 
     def s3_bucket
-      creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[env]
+      creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[Orchestrator.env]
       creds['aws_submissions_bucket']
     end
 

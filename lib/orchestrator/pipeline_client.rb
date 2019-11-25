@@ -30,7 +30,6 @@ class PipelineClient
     # Is it after each send_recv, or just after the tests are
     # run, or when the pipeline client is GC'd?
     ObjectSpace.define_finalizer(self, proc {
-      p "HERE!!"
       socket.setsockopt(ZMQ::LINGER, 0)
       socket.close
     })

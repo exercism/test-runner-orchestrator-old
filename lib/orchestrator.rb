@@ -29,4 +29,8 @@ module Orchestrator
   def self.listen
     ListenForNewSubmissions.()
   end
+
+  def self.env
+    @env ||= (ENV["ENV"] || "development")
+  end
 end

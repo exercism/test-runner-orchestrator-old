@@ -6,7 +6,7 @@ module Propono
     Client.new do |config|
       creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)
 
-      creds = creds[ ENV["ENV"] || "development" ]
+      creds = creds[Orchestrator.env]
 
       config.access_key = creds["aws_access_key_id"]
       config.secret_key = creds["aws_secret_access_key"]
