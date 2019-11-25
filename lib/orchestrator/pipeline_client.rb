@@ -1,3 +1,5 @@
+require 'objspace'
+
 class ContainerRunnerError < RuntimeError
 end
 
@@ -17,15 +19,21 @@ class PipelineClient
   ADDRESS = "tcp://localhost:5555"
 
   def self.run_tests(*args)
-    instance = new
-    instance.run_tests(*args)
-  ensure
-    instance.close_socket
+    new.run_tests(*args)
   end
 
   def initialize(address: ADDRESS)
     @address = address
     @socket = open_socket
+
+    # CCARE - when do we actually want to close the socket?
+    # Is it after each send_recv, or just after the tests are
+    # run, or when the pipeline client is GC'd?
+    ObjectSpace.define_finalizer(self, proc {
+      p "HERE!!"
+      socket.setsockopt(ZMQ::LINGER, 0)
+      socket.close
+    })
   end
 
   def restart_workers!
@@ -103,11 +111,6 @@ class PipelineClient
       channel: container_type,
       new_version: new_version
     }, 300)
-  end
-
-  def close_socket
-    socket.setsockopt(ZMQ::LINGER, 0)
-    socket.close
   end
 
   private
