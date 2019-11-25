@@ -21,27 +21,21 @@ class TestRunner
     attempt = 0
 
     uuid = s3_uri.split('/').last.split('-').last
-    #puts "#{uuid}: Running initial"
 
     begin
       attempt += 1
 
-      p "#{uuid}: Running #{attempt}"
-      #puts "#{uuid}: Running #{attempt}"
-      STDOUT.flush
+      puts "#{uuid}: Running #{attempt}"
 
       run_identity = "test-#{Time.now.to_i}"
       pipeline_client.run_tests(language_slug, exercise_slug, run_identity,
                                 s3_uri, latest_version)
-=begin
     rescue ContainerTimeoutError => e
       puts "#{uuid}: Error #{e.message}"
       if attempt <= @max_retry_attempts
         puts "#{uuid}: Backoff #{attempt}"
         sleep @backoff_delay_seconds * attempt
         retry
-      else
-        raise
       end
     rescue ContainerWorkerUnavailableError => e
       puts "#{uuid}: Error #{e.message}"
@@ -50,7 +44,6 @@ class TestRunner
         sleep @backoff_delay_seconds * attempt
         retry
       end
-=end
     end
   end
 end

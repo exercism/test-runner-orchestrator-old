@@ -25,6 +25,7 @@ class TestRunnerThreadPool
       begin
         Orchestrator::TestSubmission.(test_runner_container.value, track_slug, exercise_slug, uuid)
       rescue => e
+        puts e
         # It seems that the test-runner connection gets lost
         # and needs resetting. This should achieve that.
         unless retried
