@@ -1,52 +1,60 @@
 module Orchestrator
-
-  VALID_TRACKS = %w{ruby}
-
   class TestSubmission
     include Mandate
 
     initialize_with :test_runner, :track_slug, :exercise_slug, :submission_uuid
 
     def call
-      unless VALID_TRACKS.include?(track_slug)
-        return propono.publish(:submission_tested, {
-          submission_uuid: submission_uuid,
-          status: :no_test_runner
-        })
-      end
+      return if abort_on_invalid_track!
 
-      test_data = invoke_test_runner!
-      puts "Got test data: #{test_data}"
+      run_tests!
 
-      if test_data && !test_data.empty?
-        puts "Posting test data"
-        url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
-        RestClient::Request.execute(
-          method: :post,
-          url: url,
-          payload: {
-            status: :success,
-            results: test_data
-          },
-          timeout: 5
-        )
-        puts "Posted test data"
+      if test_results && !test_results.empty?
+        handle_success!
       else
-        propono.publish(:submission_tested, {
-          submission_uuid: submission_uuid,
-          status: :fail
-        })
+        handle_error!
       end
     end
 
     private
+    attr_accessor :test_results
 
-    memoize
-    def invoke_test_runner!
+    def abort_on_invalid_track!
+      return false if Orchestrator::TRACKS.include?(track_slug)
+
+      propono.publish(:submission_tested, {
+        submission_uuid: submission_uuid,
+        status: :no_test_runner
+      })
+      true
+    end
+
+    def run_tests!
       data = test_runner.run_tests(exercise_slug, s3_uri)
-      res = data&.fetch("result")&.fetch("result")
-      puts "#{submission_uuid.split('-').last}: Results #{res}"
-      res
+      self.test_results = data&.fetch("result")&.fetch("result")
+      puts "#{submission_uuid.split('-').last}: Results #{test_results}"
+    end
+
+    def handle_success!
+      puts "Posting test data"
+      url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
+      RestClient::Request.execute(
+        method: :post,
+        url: url,
+        payload: {
+          status: :success,
+          results: test_results
+        },
+        timeout: 5
+      )
+      puts "Posted test data"
+    end
+
+    def handle_error!
+      propono.publish(:submission_tested, {
+        submission_uuid: submission_uuid,
+        status: :fail
+      })
     end
 
     def s3_uri

@@ -17,10 +17,11 @@ require "orchestrator/publish_message"
 require "orchestrator/test_submission"
 
 module Orchestrator
+  TRACKS = %w{ruby}.freeze
+
   def self.setup_threadpools!
-    languages = %w{ruby}
-    @threadpools = languages.each_with_object({}) do |lang,h|
-      h[lang] = TestRunnerThreadPool.new(lang)
+    @threadpools = TRACKS.each_with_object({}) do |track,h|
+      h[track] = TestRunnerThreadPool.new(track)
     end
   end
 
