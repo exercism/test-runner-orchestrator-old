@@ -12,12 +12,14 @@ module Orchestrator
       results = {"result" => {"result" => result}}
       s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
 
-      RestClient.expects(:post).with(
-        "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results", 
-        {
+      RestClient::Request.expects(:execute).with(
+        method: :post,
+        url: "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results",
+        payload: {
           status: :success,
           results: result
-        }
+        },
+        timeout: 5
       )
 
       test_runner = mock

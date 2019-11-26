@@ -20,15 +20,16 @@ module Orchestrator
 
       if test_data && !test_data.empty?
         puts "Posting test data"
-        path = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
-        begin
-          RestClient::Request.execute(method: :post, url: path, payload: {
+        url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
+        RestClient::Request.execute(
+          method: :post,
+          url: url,
+          payload: {
             status: :success,
             results: test_data
-          }, timeout: 5)
-        rescue Exception => e
-          puts "REST ERROR: #{e.message}"
-        end
+          },
+          timeout: 5
+        )
         puts "Posted test data"
       else
         propono.publish(:submission_tested, {

@@ -2,7 +2,7 @@ require "sinatra/base"
 require "sinatra/json"
 require "orchestrator"
 
-Orchestrator.setup!
+Orchestrator.setup_threadpools!
 
 class SubmissionsReceiverApp < Sinatra::Base
   def initialize(*args)

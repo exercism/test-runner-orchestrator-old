@@ -18,8 +18,6 @@ class TestRunnerThreadPool
 
   def test_submission(exercise_slug, uuid)
     threadpool.post do
-      #puts "#{uuid.split('-').last}: Sleeping"
-      #sleep(5)
       puts "#{uuid.split('-').last}: Initializing"
       retried = false
       begin

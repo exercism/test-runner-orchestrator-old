@@ -1,6 +1,3 @@
-STDOUT.sync = true
-STDERR.sync = true
-
 require "mandate"
 require "propono"
 require "rest-client"
@@ -12,23 +9,15 @@ require 'concurrent-ruby'
 require 'rest-client'
 
 require "ext/propono"
+require "orchestrator/exceptions"
 require "orchestrator/pipeline_client"
 require "orchestrator/test_runner"
 require "orchestrator/test_runner_thread_pool"
 require "orchestrator/publish_message"
 require "orchestrator/test_submission"
 
-class TestRunnerError < RuntimeError
-end
-
-class TestRunnerTimeoutError < TestRunnerError
-end
-
-class TestRunnerWorkerUnavailableError < TestRunnerError
-end
-
 module Orchestrator
-  def self.setup!
+  def self.setup_threadpools!
     languages = %w{ruby}
     @threadpools = languages.each_with_object({}) do |lang,h|
       h[lang] = TestRunnerThreadPool.new(lang)
