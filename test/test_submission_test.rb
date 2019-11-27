@@ -5,64 +5,59 @@ module Orchestrator
   class TestSubmissionTest < Minitest::Test
 
     def test_calls_system_and_propono_with_the_correct_params
-      Timecop.freeze do
-        track_slug = "ruby"
-        exercise_slug = "two-fer"
-        submission_id = SecureRandom.uuid
-        results = {"foo" => "bar"}
-        s3_uri = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
-        hex = "12345678"
-        SecureRandom.expects(:hex).with(5).returns(hex)
-        test_run_id = "#{Time.now.to_i}_#{submission_id}_#{hex}"
+      track_slug = "ruby"
+      exercise_slug = "two-fer"
+      submission_uuid = SecureRandom.uuid
+      result = {"foo" => "bar"}
+      results = {"result" => {"result" => result}}
+      s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
 
-        propono = mock
-        propono.expects(:publish).with(:submission_tested, {
-          submission_id: submission_id,
+      RestClient::Request.expects(:execute).with(
+        method: :post,
+        url: "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results",
+        payload: {
           status: :success,
-          results: results
-        })
-        Propono.expects(:configure_client).returns(propono)
+          results: result
+        },
+        timeout: 5
+      )
 
-        PipelineClient.expects(:run_tests).with(track_slug, exercise_slug, test_run_id, s3_uri).returns(results)
-        Orchestrator::TestSubmission.(track_slug, exercise_slug, submission_id)
-      end
+      test_runner = mock
+      test_runner.expects(:run_tests).with(exercise_slug, s3_uri).returns(results)
+      Orchestrator::TestSubmission.(test_runner, track_slug, exercise_slug, submission_uuid)
     end
 
     def test_calls_system_and_propono_with_the_correct_params_when_fails
-      Timecop.freeze do
-        track_slug = "ruby"
-        exercise_slug = "two-fer"
-        submission_id = SecureRandom.uuid
-        s3_uri = "s3://test-exercism-submissions/test/submissions/#{submission_id}"
-        hex = "12345678"
-        SecureRandom.expects(:hex).with(5).returns(hex)
-        test_run_id = "#{Time.now.to_i}_#{submission_id}_#{hex}"
-
-        propono = mock
-        propono.expects(:publish).with(:submission_tested, {
-          submission_id: submission_id,
-          status: :fail
-        })
-        Propono.expects(:configure_client).returns(propono)
-
-        PipelineClient.expects(:run_tests).with(track_slug, exercise_slug, test_run_id, s3_uri).returns(nil)
-        Orchestrator::TestSubmission.("ruby", "two-fer", submission_id)
-      end
-    end
-
-    def test_fails_with_invalid_analyzers
-      submission_id = SecureRandom.uuid
-
-      Kernel.expects(:system).never
+      track_slug = "ruby"
+      exercise_slug = "two-fer"
+      submission_uuid = SecureRandom.uuid
+      s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
 
       propono = mock
       propono.expects(:publish).with(:submission_tested, {
-        submission_id: submission_id,
+        submission_uuid: submission_uuid,
+        status: :fail
+      })
+      Propono.expects(:configure_client).returns(propono)
+
+      test_runner = mock
+      test_runner.expects(:run_tests).with(exercise_slug, s3_uri).returns(nil)
+      Orchestrator::TestSubmission.(test_runner, track_slug, exercise_slug, submission_uuid)
+    end
+
+    def test_fails_with_invalid_analyzers
+      submission_uuid = SecureRandom.uuid
+
+      propono = mock
+      propono.expects(:publish).with(:submission_tested, {
+        submission_uuid: submission_uuid,
         status: :no_test_runner
       })
       Propono.expects(:configure_client).returns(propono)
 
-      Orchestrator::TestSubmission.("foobar", "two-fer", submission_id)
+      test_runner = mock
+      test_runner.expects(:run_tests).never
+      Orchestrator::TestSubmission.(test_runner, "foobar", "two-fer", submission_uuid)
     end
   end
 end

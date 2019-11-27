@@ -1,114 +1,72 @@
 module Orchestrator
-
-  VALID_TRACKS = %w{ruby}
-
   class TestSubmission
     include Mandate
 
-    initialize_with :track_slug, :exercise_slug, :submission_id
+    initialize_with :pipeline_client, :container_version, :track_slug, :exercise_slug, :submission_uuid
 
     def call
-      unless VALID_TRACKS.include?(track_slug)
-        return propono.publish(:submission_tested, {
-          submission_id: submission_id,
-          status: :no_test_runner
-        })
-      end
+      return if abort_on_invalid_track!
 
-      test_data = invoke_test_runner!
+      run_tests!
 
-      if test_data && !test_data.empty?
-        propono.publish(:submission_tested, {
-          submission_id: submission_id,
-          status: :success,
-          results: test_data
-        })
+      if test_results && !test_results.empty?
+        handle_success!
       else
-        propono.publish(:submission_tested, {
-          submission_id: submission_id,
-          status: :fail
-        })
+        handle_error!
       end
     end
 
     private
+    attr_accessor :test_results
 
-    memoize
-    def invoke_test_runner!
-      case env
-      when "development"
-        invoke_development_test_runner!
-      else
-        invoke_production_test_runner!
-      end
+    def abort_on_invalid_track!
+      return false if Orchestrator::TRACKS.keys.include?(track_slug)
+
+      propono.publish(:submission_tested, {
+        submission_uuid: submission_uuid,
+        status: :no_test_runner
+      })
+      true
     end
 
-    def invoke_development_test_runner!
-      PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+    def run_tests!
+      run_identity = "test-#{Time.now.to_i}"
+      data = pipeline_client.run_tests(track_slug, exercise_slug, run_identity,
+                                       s3_uri, container_version)
 
-      #Bundler.with_clean_env do
-      #  cmd = %Q{cd ../test-runner-dev-invoker && bin/run.sh #{s3_path} #{data_path}}
-      #  p cmd
-      #  Kernel.system(cmd)
-      #end
+      self.test_results = data&.fetch("result")&.fetch("result")
+      puts "#{submission_uuid.split('-').last}: Results #{test_results}"
     end
 
-    def invoke_production_test_runner!
-      PipelineClient.run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+    def handle_success!
+      #url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
+      url = "https://exercism.io/spi/submissions/#{submission_uuid}/test_results"
+      RestClient.post(url, {
+        status: :success,
+        results: test_results
+      })
+    rescue => e
+      puts e
     end
 
-    memoize
-    def test_run_id
-      "#{Time.now.to_i}_#{submission_id}_#{SecureRandom.hex(5)}"
+    def handle_error!
+      propono.publish(:submission_tested, {
+        submission_uuid: submission_uuid,
+        status: :fail
+      })
     end
 
     def s3_uri
-      "s3://#{s3_bucket}/#{s3_path}"
-    end
+      creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[Orchestrator.env]
+      bucket = creds['aws_submissions_bucket']
+      path = "#{Orchestrator.env}/testing/#{submission_uuid}"
 
-    def s3_path
-      "#{env}/submissions/#{submission_id}"
-    end
-
-    def env
-      ENV["ENV"] || "development"
-    end
-
-    def s3_bucket
-      creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[env]
-      creds['aws_submissions_bucket']
-    end
-
-    def test_data
-      # "iteration" here is temporary
-      location = "#{data_path}/iteration/output/results.json"
-      JSON.parse(File.read(location))
-    rescue
-      {}
-    end
-
-    def data_path
-      "#{data_root_path}/#{track_slug}/runs/submission_#{test_run_id}"
-    end
-
-    def data_root_path
-      case env
-      when "production"
-        PRODUCTION_DATA_PATH
-      else
-        File.expand_path(File.dirname(__FILE__) + "/../../tmp/test_runner_runtime/").tap do |path|
-          FileUtils.mkdir_p(path)
-        end
-      end
+      "s3://#{bucket}/#{path}"
     end
 
     memoize
     def propono
       Propono.configure_client
     end
-
-    PRODUCTION_DATA_PATH = "/opt/exercism/test_runner_runtime".freeze
-    private_constant :PRODUCTION_DATA_PATH
   end
 end
-

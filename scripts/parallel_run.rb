@@ -1,13 +1,10 @@
-
 $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 require "orchestrator"
-
 require "parallel"
-
 
 def get_client(language_slug, container_version)
   Thread.current[:test_runner] ||= begin
-    client = PipelineClient.new
+    client = PipelineClient.new(address: "tcp://analysis-router.exercism.io:5555")
     @clients << client
     test_runner = TestRunner.new(client, language_slug)
     test_runner.select_version(container_version)
@@ -15,12 +12,11 @@ def get_client(language_slug, container_version)
   end
 end
 
-
 s3_uri = "s3://exercism-submissions/production/submissions/96"
 
 container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
 
-client = PipelineClient.new
+client = PipelineClient.new(address: "tcp://analysis-router.exercism.io:5555")
 test_runner = TestRunner.new(client, "ruby")
 test_runner.configure_version(container_version)
 
