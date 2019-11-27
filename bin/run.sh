@@ -1,9 +1,15 @@
 #!/usr/bin/env ruby
 
-require "bundler/setup"
+# require "bundler/setup"
+# $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
+# require "orchestrator"
+# Orchestrator.listen
 
-$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
+$stdout.sync = true
+$stderr.sync = true
 
-require "orchestrator"
+$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 
-Orchestrator.listen
+require_relative "http/submissions_reciever_app"
+
+run SubmissionsReceiverApp
