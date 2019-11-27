@@ -1,15 +1,5 @@
-#!/usr/bin/env ruby
+#!/usr/bin/bash
 
-# require "bundler/setup"
-# $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
-# require "orchestrator"
-# Orchestrator.listen
-
-$stdout.sync = true
-$stderr.sync = true
-
-$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
-
-require_relative "http/submissions_reciever_app"
-
-run SubmissionsReceiverApp
+export ENV=production
+export RACK_ENV=production
+rackup
