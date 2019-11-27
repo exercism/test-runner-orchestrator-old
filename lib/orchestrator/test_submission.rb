@@ -39,7 +39,8 @@ module Orchestrator
     end
 
     def handle_success!
-      url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
+      #url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
+      url = "https://exercism.io/spi/submissions/#{submission_uuid}/test_results"
       RestClient.post(url, {
         status: :success,
         results: test_results

@@ -39,6 +39,7 @@ GEM
     propono (2.2.0)
       aws-sdk-sns
       aws-sdk-sqs
+    puma (3.12.1)
     rack (2.0.7)
     rack-protection (2.0.7)
       rack
@@ -78,6 +79,7 @@ DEPENDENCIES
   mocha
   parallel
   propono
+  puma
   rake
   rbczmq
   rest-client

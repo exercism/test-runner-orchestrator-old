@@ -14,6 +14,7 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'concurrent-ruby'
 gem 'rest-client'
+gem 'puma'
 
 gem 'mandate'
 gem 'propono'

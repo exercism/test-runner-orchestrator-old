@@ -138,6 +138,7 @@ class PipelineClient
     recvd_msg = socket.recv_message
 
     puts "Got message"
+    puts recvd_msg
 
     response = recvd_msg.pop.data
     puts "Got response"
