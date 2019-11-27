@@ -2,7 +2,7 @@ module Orchestrator
   class TestSubmission
     include Mandate
 
-    initialize_with :test_runner, :track_slug, :exercise_slug, :submission_uuid
+    initialize_with :pipeline_client, :container_version, :track_slug, :exercise_slug, :submission_uuid
 
     def call
       return if abort_on_invalid_track!
@@ -20,7 +20,7 @@ module Orchestrator
     attr_accessor :test_results
 
     def abort_on_invalid_track!
-      return false if Orchestrator::TRACKS.include?(track_slug)
+      return false if Orchestrator::TRACKS.keys.include?(track_slug)
 
       propono.publish(:submission_tested, {
         submission_uuid: submission_uuid,
@@ -30,24 +30,22 @@ module Orchestrator
     end
 
     def run_tests!
-      data = test_runner.run_tests(exercise_slug, s3_uri)
+      run_identity = "test-#{Time.now.to_i}"
+      data = pipeline_client.run_tests(track_slug, exercise_slug, run_identity,
+                                       s3_uri, container_version)
+
       self.test_results = data&.fetch("result")&.fetch("result")
       puts "#{submission_uuid.split('-').last}: Results #{test_results}"
     end
 
     def handle_success!
-      puts "Posting test data"
       url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
-      RestClient::Request.execute(
-        method: :post,
-        url: url,
-        payload: {
-          status: :success,
-          results: test_results
-        },
-        timeout: 5
-      )
-      puts "Posted test data"
+      RestClient.post(url, {
+        status: :success,
+        results: test_results
+      })
+    rescue => e
+      puts e
     end
 
     def handle_error!

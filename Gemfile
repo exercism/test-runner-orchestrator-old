@@ -17,6 +17,6 @@ gem 'rest-client'
 
 gem 'mandate'
 gem 'propono'
-gem 'ffi-rzmq'
+gem 'rbczmq'
 
 gem 'parallel'

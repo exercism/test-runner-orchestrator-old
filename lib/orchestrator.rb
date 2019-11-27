@@ -1,7 +1,6 @@
 require "mandate"
 require "propono"
-require "rest-client"
-require 'ffi-rzmq'
+require 'rbczmq'
 require 'json'
 require 'yaml'
 require 'securerandom'
@@ -17,16 +16,16 @@ require "orchestrator/publish_message"
 require "orchestrator/test_submission"
 
 module Orchestrator
-  TRACKS = %w{ruby}.freeze
+  # Todo build this from JSON
+  # Tracks with:
+  #  - timeouts in milliseconds
+  TRACKS = Concurrent::Map.new
+  TRACKS[:ruby] = Concurrent::Map.new
+  TRACKS[:ruby][:timeout] = 3_000
 
-  def self.setup_threadpools!
-    @threadpools = TRACKS.each_with_object({}) do |track,h|
-      h[track] = TestRunnerThreadPool.new(track)
-    end
-  end
-
-  def self.threadpools
-    @threadpools
+  THREADPOOLS = Concurrent::Map.new
+  TRACKS.keys.each do |track|
+    THREADPOOLS[track] = TestRunnerThreadPool.new(track)
   end
 
   def self.env

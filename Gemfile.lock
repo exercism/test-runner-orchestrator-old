@@ -20,11 +20,6 @@ GEM
     concurrent-ruby (1.1.5)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
-    ffi (1.11.1)
-    ffi-rzmq (2.0.7)
-      ffi-rzmq-core (>= 1.0.7)
-    ffi-rzmq-core (1.0.7)
-      ffi
     http-accept (1.7.0)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
@@ -48,6 +43,7 @@ GEM
     rack-protection (2.0.7)
       rack
     rake (12.3.2)
+    rbczmq (1.7.9)
     rest-client (2.1.0)
       http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
@@ -77,13 +73,13 @@ PLATFORMS
 DEPENDENCIES
   bundler
   concurrent-ruby
-  ffi-rzmq
   mandate
   minitest (~> 5.0.8)
   mocha
   parallel
   propono
   rake
+  rbczmq
   rest-client
   sinatra
   sinatra-contrib
