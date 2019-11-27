@@ -10,7 +10,14 @@ gem "rake"
 gem "mocha"
 gem "minitest", "~> 5.0.8"
 gem 'timecop'
+gem 'sinatra'
+gem 'sinatra-contrib'
+gem 'concurrent-ruby'
+gem 'rest-client'
+gem 'puma'
 
 gem 'mandate'
 gem 'propono'
-gem 'ffi-rzmq'
+gem 'rbczmq'
+
+gem 'parallel'

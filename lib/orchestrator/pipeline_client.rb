@@ -1,72 +1,164 @@
-require 'ffi-rzmq'
-require 'json'
-require 'yaml'
-require 'securerandom'
+require 'objspace'
 
 class PipelineClient
 
-  TIMEOUT_SECS = 10
-  ADDRESS = "tcp://ec2-34-245-83-27.eu-west-1.compute.amazonaws.com:5555"
-
-  def self.run_tests(*args)
-    new.run_tests(*args)
-  end
+  ADDRESS = "tcp://analysis-router.exercism.io:5555"
+  #ADDRESS = "tcp://localhost:5555"
 
   def initialize(address: ADDRESS)
     @address = address
     @socket = open_socket
+
+    # CCARE - when do we actually want to close the socket?
+    # Is it after each send_recv, or just after the tests are
+    # run, or when the pipeline client is GC'd?
+    #ObjectSpace.define_finalizer(self, proc {
+    #})
   end
 
-  def run_tests(track_slug, exercise_slug, test_run_id, s3_uri)
+  def restart_workers!
+    send_recv({
+      action: :restart_workers
+    })
+  end
+
+  def reload_config!
+    send_recv({
+      action: :reload_config
+    })
+  end
+
+  def current_config
+    send_recv({
+      action: :current_config
+    })
+  end
+
+  def list_available_containers(track_slug, container_type)
+    send_recv({
+      action: :list_available_containers,
+      track_slug: track_slug,
+      channel: container_type
+    })
+  end
+
+  def run_tests(track_slug, exercise_slug, test_run_id, s3_uri, container_version)
     params = {
       action: :test_solution,
       id: test_run_id,
       track_slug: track_slug,
       exercise_slug: exercise_slug,
       s3_uri: s3_uri,
-      container_version: "b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb",
+      container_version: container_version
+      # "b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb",
+      # container_version: "sha-122a036658c815c2024c604046692adc4c23d5c1",
     }
+    timeout = Orchestrator::TRACKS[track_slug][:timeout]
+    send_recv(params, timeout)
+  end
 
-    # Get a response. Raises if fails
-    resp = send_msg(params.to_json, TIMEOUT_SECS)
+  def build_container(track_slug, container_type, reference)
+    send_recv({
+      action: :build_container,
+      track_slug: track_slug,
+      channel: container_type,
+      git_reference: reference #"d88564f01727e76f3ddea93714bdf2ea45abef86"
+      # git_reference: "039f2842cabcfdc66f7f96573144e8eb255ec6e1" #bd8a0a593fa647c5bdd366080fc1e20c1bda7cb9
+    }, 300_000)
+  end
 
-    # Parse the response and return the results hash
-    JSON.parse(resp)["results"]
-  ensure
-    close_socket
+  def configure_containers(track_slug, container_type, versions)
+    send_recv({
+      action: :update_container_versions,
+      track_slug: track_slug,
+      channel: container_type,
+      versions: versions
+    }, 300_000)
+  end
+
+  def enable_container(track_slug, container_type, new_version)
+    send_recv({
+      action: :deploy_container_version,
+      track_slug: track_slug,
+      channel: container_type,
+      new_version: new_version
+    }, 300_000)
+  end
+
+  def unload_container(track_slug, container_type, new_version)
+    send_recv({
+      action: :unload_container_version,
+      track_slug: track_slug,
+      channel: container_type,
+      new_version: new_version
+    }, 300_000)
+  end
+
+  def close_socket
+    #socket.setsockopt(ZMQ::LINGER, 1)
+    socket.close
   end
 
   private
 
   attr_reader :address, :socket
 
+  def send_recv(payload, timeout=20_000)
+    # Get a response. Raises if fails
+    resp = send_msg(payload.to_json, timeout)
+    # Parse the response and return the results hash
+    parsed = JSON.parse(resp)
+    #pp parsed
+    # raise FailedRequest.new("failed request") unless parsed["status"]["ok"]
+    parsed
+  rescue => e
+    puts "Send_recv failed with #{e.message}"
+    raise
+  end
+
   def open_socket
     ZMQ::Context.new(1).socket(ZMQ::REQ).tap do |socket|
-      socket.setsockopt(ZMQ::LINGER, 0)
+      socket.linger = 1
       socket.connect(address)
     end
   end
 
-  def close_socket
-    socket.close
-  end
+  def send_msg(json, timeout_ms)
+    socket.linger = timeout_ms / 2
+    socket.rcvtimeo = timeout_ms
 
-  def send_msg(msg, timeout)
-    timeout_ms = timeout * 1000
-    socket.setsockopt(ZMQ::RCVTIMEO, timeout_ms)
-    socket.send_string(msg)
+    msg = ZMQ::Message.new
+    msg.push(ZMQ::Frame(json))
+
+    puts "Sending msg"
+    socket.send_message(msg)
 
     # Get the response back from the runner
-    recv_result = socket.recv_string(response = "")
+    puts "Waiting for response"
+    recvd_msg = socket.recv_message
 
+    puts "Got message"
+    puts recvd_msg
+
+    response = recvd_msg.pop.data
+    puts "Got response"
+
+=begin
     # Guard against errors
-    raise TestRunnerTimeoutError if recv_result < 0
+    if recv_result < 0
+      puts "Errored with error: #{recv_result} | #{ZMQ::Util.errno}"
+      raise ContainerTimeoutError
+    end
+
     case recv_result
     when 20
-      raise TestRunnerTimeoutError
+      puts "Errored with error: 20 | #{ZMQ::Util.errno}"
+      raise ContainerTimeoutError
     when 31
-      raise TestRunnerWorkerUnavailableError
+      puts "Errored with error: 32 | #{ZMQ::Util.errno}"
+      raise ContainerWorkerUnavailableError
     end
+=end
 
     # Return the response
     response
