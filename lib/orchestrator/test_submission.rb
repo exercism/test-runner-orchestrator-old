@@ -39,8 +39,8 @@ module Orchestrator
     end
 
     def handle_success!
-      #url = "http://localhost:3000/spi/submissions/#{submission_uuid}/test_results"
-      url = "https://exercism.io/spi/submissions/#{submission_uuid}/test_results"
+      spi_adddress = secrets['spi_adddres']
+      url = "#{spi_adddress}/submissions/#{submission_uuid}/test_results"
       RestClient.post(url, {
         status: :success,
         results: test_results
@@ -57,11 +57,15 @@ module Orchestrator
     end
 
     def s3_uri
-      creds = YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[Orchestrator.env]
-      bucket = creds['aws_submissions_bucket']
+      bucket = secrets['aws_submissions_bucket']
       path = "#{Orchestrator.env}/testing/#{submission_uuid}"
 
       "s3://#{bucket}/#{path}"
+    end
+    
+    memoize
+    def secrets
+      YAML::load(ERB.new(File.read(File.dirname(__FILE__) + "/../../config/secrets.yml")).result)[Orchestrator.env]
     end
 
     memoize
