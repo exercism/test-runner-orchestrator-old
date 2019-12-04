@@ -1,7 +1,7 @@
 # This class is the threadpool used to run
 # test-runners. It uses concurrent-ruby. Everything it
 # executes must be threadsafe.
-class TestRunnerThreadPool
+class PipelineClientThreadPool
   def initialize(track_slug)
     @track_slug = track_slug
     @pipeline_clients = Concurrent::Array.new
@@ -26,6 +26,7 @@ class TestRunnerThreadPool
         Orchestrator::TestSubmission.(pipeline_client, container_version, track_slug, exercise_slug, uuid)
       rescue ContainerTimeoutError => e
         puts "#{uuid.split('-').last}: #{e}"
+
         # It seems that the pipeline_client connection gets lost
         # and needs resetting. This should achieve that.
         unless retried

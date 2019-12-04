@@ -10,8 +10,7 @@ require 'rest-client'
 require "ext/propono"
 require "orchestrator/exceptions"
 require "orchestrator/pipeline_client"
-require "orchestrator/test_runner"
-require "orchestrator/test_runner_thread_pool"
+require "orchestrator/pipeline_client_thread_pool"
 require "orchestrator/publish_message"
 require "orchestrator/test_submission"
 
@@ -24,7 +23,7 @@ module Orchestrator
 
   THREADPOOLS = Concurrent::Map.new
   TRACKS.keys.each do |track|
-    THREADPOOLS[track] = TestRunnerThreadPool.new(track)
+    THREADPOOLS[track] = PipelineClientThreadPool.new(track)
   end
 
   def self.env
