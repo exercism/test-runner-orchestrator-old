@@ -117,7 +117,13 @@ class PipelineClient
   end
 
   def open_socket
-    ZMQ::Context.new(1).socket(ZMQ::REQ).tap do |socket|
+
+    # Although this is never used outside of this method,
+    # it must be set as an instance variable so that it
+    # doesn't get garbage collected accidently.
+    @context = ZMQ::Context.new(1)
+
+    @context.socket(ZMQ::REQ).tap do |socket|
       socket.linger = 1
       socket.connect(address)
     end
@@ -128,7 +134,7 @@ class PipelineClient
     socket.rcvtimeo = timeout_ms
 
     msg = ZMQ::Message.new
-    msg.push(ZMQ::Frame(json))
+    msg.push(ZMQ::Frame.new(json))
 
     puts "Sending msg"
     socket.send_message(msg)

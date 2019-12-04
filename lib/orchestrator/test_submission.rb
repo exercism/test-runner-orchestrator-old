@@ -39,7 +39,7 @@ module Orchestrator
     end
 
     def handle_success!
-      spi_adddress = secrets['spi_adddres']
+      spi_adddress = secrets['spi_address']
       url = "#{spi_adddress}/submissions/#{submission_uuid}/test_results"
       RestClient.post(url, {
         status: :success,

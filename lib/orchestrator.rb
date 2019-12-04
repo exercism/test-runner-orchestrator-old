@@ -20,8 +20,7 @@ module Orchestrator
   # Tracks with:
   #  - timeouts in milliseconds
   TRACKS = Concurrent::Map.new
-  TRACKS[:ruby] = Concurrent::Map.new
-  TRACKS[:ruby][:timeout] = 3_000
+  TRACKS[:ruby] = {timeout: 3_000}
 
   THREADPOOLS = Concurrent::Map.new
   TRACKS.keys.each do |track|
