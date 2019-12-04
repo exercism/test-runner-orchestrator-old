@@ -19,12 +19,18 @@ class PipelineClientThreadPool
   def test_submission(in_exercise_slug, in_uuid)
     job = Proc.new do |exercise_slug, uuid, pipeline_client_container|
       puts "#{uuid.split('-').last}: Initializing"
+
+      container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
+      pipeline_client = pipeline_client_container.value
+      TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, uuid)
+
+=begin
       retried = false
       begin
         container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
         pipeline_client = pipeline_client_container.value
-        Orchestrator::TestSubmission.(pipeline_client, container_version, track_slug, exercise_slug, uuid)
-      rescue ContainerTimeoutError => e
+        TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, uuid)
+      rescue => e
         puts "#{uuid.split('-').last}: #{e}"
 
         # It seems that the pipeline_client connection gets lost
@@ -41,6 +47,7 @@ class PipelineClientThreadPool
         puts "#{uuid.split('-').last}: #{e}"
         raise
       end
+=end
     end
 
     threadpool.post(in_exercise_slug, in_uuid, pipeline_client_container, &job)
@@ -55,7 +62,7 @@ class PipelineClientThreadPool
     end
   end
 
-  # TODO - This doesn't do anything, I presume I need to 
+  # TODO - This doesn't do anything, I presume I need to
   # call the at_exit method, not define it?
   def at_exit
     puts "Cleaning up sockets"

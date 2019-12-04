@@ -42,7 +42,8 @@ class PipelineClient
     })
   end
 
-  def run_tests(track_slug, exercise_slug, test_run_id, s3_uri, container_version)
+  def run_tests(track_slug, exercise_slug, s3_uri, container_version)
+    test_run_id = "test-#{Time.now.to_i}"
     params = {
       action: :test_solution,
       id: test_run_id,
@@ -104,20 +105,14 @@ class PipelineClient
   attr_reader :address, :socket
 
   def send_recv(payload, timeout=20_000)
-    # Get a response. Raises if fails
     resp = send_msg(payload.to_json, timeout)
-    # Parse the response and return the results hash
-    parsed = JSON.parse(resp)
-    #pp parsed
-    # raise FailedRequest.new("failed request") unless parsed["status"]["ok"]
-    parsed
+    JSON.parse(resp)
   rescue => e
     puts "Send_recv failed with #{e.message}"
     raise
   end
 
   def open_socket
-
     # Although this is never used outside of this method,
     # it must be set as an instance variable so that it
     # doesn't get garbage collected accidently.

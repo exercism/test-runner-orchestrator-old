@@ -8,11 +8,14 @@ require 'concurrent-ruby'
 require 'rest-client'
 
 require "ext/propono"
-require "orchestrator/exceptions"
-require "orchestrator/pipeline_client"
-require "orchestrator/pipeline_client_thread_pool"
-require "orchestrator/publish_message"
-require "orchestrator/test_submission"
+require "orchestrator/models/pipeline_client"
+require "orchestrator/models/pipeline_client_thread_pool"
+require "orchestrator/models/test_run"
+require "orchestrator/models/test_runner"
+require "orchestrator/models/spi_notifier"
+
+require "orchestrator/commands/publish_message"
+require "orchestrator/commands/run_tests"
 
 module Orchestrator
   # Todo build this from JSON
