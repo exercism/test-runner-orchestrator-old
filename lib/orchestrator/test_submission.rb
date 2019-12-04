@@ -34,6 +34,7 @@ module Orchestrator
       data = pipeline_client.run_tests(track_slug, exercise_slug, run_identity,
                                        s3_uri, container_version)
 
+      pp data
       self.test_results = data&.fetch("result")&.fetch("result")
       puts "#{submission_uuid.split('-').last}: Results #{test_results}"
     end
