@@ -2,7 +2,7 @@ require 'test_helper'
 require 'json'
 
 module Orchestrator
-  class TestSubmissionTest < Minitest::Test
+  class TestRunnerTest < Minitest::Test
 
     def test_calls_system_and_propono_with_the_correct_params
       Timecop.freeze do
@@ -10,7 +10,7 @@ module Orchestrator
         exercise_slug = "two-fer"
         submission_uuid = SecureRandom.uuid
         result = {"foo" => "bar"}
-        results = {"result" => {"result" => result}}
+        results = {"status" => {"code" => 200}, "response" => result}
         s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
 
         RestClient.expects(:post).with(
@@ -23,8 +23,8 @@ module Orchestrator
 
         container_version = mock
         pipeline_client = mock
-        pipeline_client.expects(:run_tests).with(track_slug, exercise_slug, "test-#{Time.now.to_i}", s3_uri, container_version).returns(results)
-        Orchestrator::TestSubmission.(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
+        pipeline_client.expects(:run_tests).with(track_slug, exercise_slug, s3_uri, container_version).returns(results)
+        TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
       end
     end
 
@@ -44,8 +44,8 @@ module Orchestrator
 
         container_version = mock
         pipeline_client = mock
-        pipeline_client.expects(:run_tests).with(track_slug, exercise_slug, "test-#{Time.now.to_i}", s3_uri, container_version).returns(nil)
-        Orchestrator::TestSubmission.(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
+        pipeline_client.expects(:run_tests).with(track_slug, exercise_slug, s3_uri, container_version).returns(nil)
+        TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
       end
     end
 
@@ -62,7 +62,7 @@ module Orchestrator
       container_version = mock
       pipeline_client = mock
       pipeline_client.expects(:run_tests).never
-      Orchestrator::TestSubmission.(pipeline_client, container_version, "foobar", "two-fer", submission_uuid)
+      TestRunner.run(pipeline_client, container_version, "foobar", "two-fer", submission_uuid)
     end
   end
 end
