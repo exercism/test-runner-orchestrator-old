@@ -4,7 +4,7 @@
 # It has the pattern of:
 # {
 #  "status": {
-#    "code": 200,
+#    "status_code": 200,
 #    "message": "OK"
 #  },
 #  "response": { "data": "here" },
@@ -23,7 +23,7 @@ class TestRun
   attr_reader :status_code
   def initialize(data)
     @data = data
-    @status_code = data&.fetch("status", nil)&.fetch("code", nil).to_i
+    @status_code = data&.fetch("status", nil)&.fetch("status_code", nil).to_i
   end
 
   def results

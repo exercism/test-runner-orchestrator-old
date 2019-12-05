@@ -143,6 +143,7 @@ class PipelineClient
 
     response = recvd_msg.pop.data
     puts "Got response"
+    puts response
 
 =begin
     # Guard against errors
