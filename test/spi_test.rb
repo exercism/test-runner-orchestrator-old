@@ -18,7 +18,7 @@ module Orchestrator
         "response" => results
       })
       RestClient.expects(:post).with(
-        "http://test-host.exercism.io/submissions/#{submission_uuid}/test_results",
+        "http://test-host.exercism.io/submissions/#{submission_uuid}/test_runs",
         {
           ops_status: status_code,
           ops_message: status_message,

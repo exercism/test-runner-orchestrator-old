@@ -2,7 +2,7 @@ module Orchestrator
   class SPI
 
     def self.post_test_run(submission_uuid, test_run)
-      url = "#{spi_adddress}/submissions/#{submission_uuid}/test_results"
+      url = "#{spi_adddress}/submissions/#{submission_uuid}/test_runs"
       RestClient.post(url, {
         ops_status: test_run.status_code,
         ops_message: test_run.status_message,
