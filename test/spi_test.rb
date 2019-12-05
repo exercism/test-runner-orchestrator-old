@@ -12,10 +12,10 @@ module Orchestrator
 
       test_run = TestRun.new({
         "status" => {
-          "status_code" => status_code
-          "message" => status_message
-          "results" => results
-        }
+          "status_code" => status_code,
+          "message" => status_message,
+        },
+        "response" => results
       })
       RestClient.expects(:post).with(
         "http://test-host.exercism.io/submissions/#{submission_uuid}/test_results",

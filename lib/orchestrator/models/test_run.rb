@@ -20,10 +20,11 @@
 # }
 
 class TestRun
-  attr_reader :status_code
+  attr_reader :status_code, :status_message
   def initialize(data)
     @data = data
     @status_code = data&.fetch("status", nil)&.fetch("status_code", nil).to_i
+    @status_message = data&.fetch("status", nil)&.fetch("message", nil)
   end
 
   def results

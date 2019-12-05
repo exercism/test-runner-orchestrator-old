@@ -4,9 +4,9 @@ module Orchestrator
     def self.post_test_run(submission_uuid, test_run)
       url = "#{spi_adddress}/submissions/#{submission_uuid}/test_results"
       RestClient.post(url, {
-        ops_status: test_run.status,
-        ops_message: test_run.message,
-        results: results
+        ops_status: test_run.status_code,
+        ops_message: test_run.status_message,
+        results: test_run.results
       })
     end
 
