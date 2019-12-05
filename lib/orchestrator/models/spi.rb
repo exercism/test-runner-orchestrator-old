@@ -1,10 +1,11 @@
 module Orchestrator
-  class SPINotifier
+  class SPI
 
-    def self.notify_test_results!(submission_uuid, status, results)
+    def self.post_test_run(submission_uuid, test_run)
       url = "#{spi_adddress}/submissions/#{submission_uuid}/test_results"
       RestClient.post(url, {
-        status: status,
+        ops_status: test_run.status,
+        ops_message: test_run.message,
         results: results
       })
     end

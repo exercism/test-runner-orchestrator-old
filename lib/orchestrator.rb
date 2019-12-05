@@ -1,5 +1,5 @@
+require 'erb'
 require "mandate"
-require "propono"
 require 'rbczmq'
 require 'json'
 require 'yaml'
@@ -7,12 +7,11 @@ require 'securerandom'
 require 'concurrent-ruby'
 require 'rest-client'
 
-require "ext/propono"
 require "orchestrator/models/pipeline_client"
 require "orchestrator/models/pipeline_client_thread_pool"
 require "orchestrator/models/test_run"
 require "orchestrator/models/test_runner"
-require "orchestrator/models/spi_notifier"
+require "orchestrator/models/spi"
 
 require "orchestrator/commands/publish_message"
 require "orchestrator/commands/run_tests"

@@ -5,64 +5,27 @@ module Orchestrator
   class TestRunnerTest < Minitest::Test
 
     def test_calls_system_and_propono_with_the_correct_params
-      Timecop.freeze do
-        track_slug = :ruby
-        exercise_slug = "two-fer"
-        submission_uuid = SecureRandom.uuid
-        result = {"foo" => "bar"}
-        results = {"status" => {"code" => 200}, "response" => result}
-        s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
+      track_slug = :ruby
+      exercise_slug = "two-fer"
+      submission_uuid = SecureRandom.uuid
+      s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
 
-        RestClient.expects(:post).with(
-          "http://test-host.exercism.io/submissions/#{submission_uuid}/test_results",
-          {
-            status: :success,
-            results: result
-          }
-        )
+      container_version = mock
+      pipeline_client = mock
+      test_run = mock
 
-        container_version = mock
-        pipeline_client = mock
-        pipeline_client.expects(:run_tests).with(track_slug, exercise_slug, s3_uri, container_version).returns(results)
-        TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
-      end
-    end
+      SPI.expects(:post_test_run).with(submission_uuid, test_run)
+      RunTests.expects(:call).with(pipeline_client, track_slug, exercise_slug, s3_uri, container_version).returns(test_run)
 
-    def test_calls_system_and_propono_with_the_correct_params_when_fails
-      Timecop.freeze do
-        track_slug = :ruby
-        exercise_slug = "two-fer"
-        submission_uuid = SecureRandom.uuid
-        s3_uri = "s3://test-exercism-submissions/test/testing/#{submission_uuid}"
-
-        propono = mock
-        propono.expects(:publish).with(:submission_tested, {
-          submission_uuid: submission_uuid,
-          status: :fail
-        })
-        Propono.expects(:configure_client).returns(propono)
-
-        container_version = mock
-        pipeline_client = mock
-        pipeline_client.expects(:run_tests).with(track_slug, exercise_slug, s3_uri, container_version).returns(nil)
-        TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
-      end
+      TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, submission_uuid)
     end
 
     def test_fails_with_invalid_analyzers
       submission_uuid = SecureRandom.uuid
 
-      propono = mock
-      propono.expects(:publish).with(:submission_tested, {
-        submission_uuid: submission_uuid,
-        status: :no_test_runner
-      })
-      Propono.expects(:configure_client).returns(propono)
+      SPI.expects(:post_test_run).never
 
-      container_version = mock
-      pipeline_client = mock
-      pipeline_client.expects(:run_tests).never
-      TestRunner.run(pipeline_client, container_version, "foobar", "two-fer", submission_uuid)
+      TestRunner.run(mock, mock, "foobar", "two-fer", mock)
     end
   end
 end

@@ -13,7 +13,7 @@ module Orchestrator
 
     def test_works_normally
       results = {'foo' => 'bar'}
-      response = JSON.parse({status: {code: 200}, response: results}.to_json)
+      response = JSON.parse({status: {status_code: 200}, response: results}.to_json)
       @pipeline_client.expects(:run_tests).with(@track_slug, @exercise_slug, @s3_uri, @container_version).
                        returns(response)
 
@@ -23,7 +23,7 @@ module Orchestrator
     end
 
     def test_fails_correctly
-      response = JSON.parse({status: {code: 500}}.to_json)
+      response = JSON.parse({status: {status_code: 500}}.to_json)
       @pipeline_client.expects(:run_tests).with(@track_slug, @exercise_slug, @s3_uri, @container_version).
                        returns(response)
 
@@ -33,7 +33,7 @@ module Orchestrator
     end
 
     def test_retries_immediately
-      response = JSON.parse({status: {code: 512}}.to_json)
+      response = JSON.parse({status: {status_code: 512}}.to_json)
       @pipeline_client.expects(:run_tests).with(@track_slug, @exercise_slug, @s3_uri, @container_version).
                        returns(response).twice
 
@@ -43,7 +43,7 @@ module Orchestrator
     end
 
     def test_retries_immediately
-      response = JSON.parse({status: {code: 503}}.to_json)
+      response = JSON.parse({status: {status_code: 503}}.to_json)
       @pipeline_client.expects(:run_tests).with(@track_slug, @exercise_slug, @s3_uri, @container_version).
                        returns(response).twice
 

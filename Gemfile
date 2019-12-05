@@ -17,7 +17,6 @@ gem 'rest-client'
 gem 'puma'
 
 gem 'mandate'
-gem 'propono'
 gem 'rbczmq'
 
 gem 'parallel'
