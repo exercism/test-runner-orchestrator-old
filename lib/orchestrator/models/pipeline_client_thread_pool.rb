@@ -23,7 +23,8 @@ module Orchestrator
           puts "#{uuid.split('-').last}: Initializing"
 
           #container_version = "git-b6ea39ccb2dd04e0b047b25c691b17d6e6b44cfb"
-          container_version = "git-da694960c8c8d5c27c50885966a4301c050ce83a"
+          #"git-da694960c8c8d5c27c50885966a4301c050ce83a"
+          container_version = TRACKS[track_slug][:container_version]
           pipeline_client = pipeline_client_container.value
           TestRunner.run(pipeline_client, container_version, track_slug, exercise_slug, uuid)
         rescue => e
