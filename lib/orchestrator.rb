@@ -27,6 +27,7 @@ module Orchestrator
   TRACKS[:python] = {timeout: 10_000, container_version: "git-777031cbe192bbc567fd5b5253db4b0545621e6c"}
   TRACKS[:ruby]   = {timeout: 3_000,  container_version: "git-1facd10f186abeb03f7bf076264a8f1c0a086f7b"}
   TRACKS[:rust]   = {timeout: 10_000, container_version: "git-91aca5f26365595d76bf60b114a6eeefc3d416a5"}
+  TRACKS[:javascript] = {timeout: 10_000, container_version: "git-d5402c2f9e1d4b01517675680fa21201c9344f91"}
 
   # A threadpool per track
   THREADPOOLS = Concurrent::Map.new
