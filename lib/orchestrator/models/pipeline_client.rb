@@ -5,6 +5,11 @@ class PipelineClient
   ADDRESS = "tcp://analysis-router.exercism.io:5555"
   #ADDRESS = "tcp://localhost:5555"
 
+  # Is this any safer as a constant?
+  def self.zmq_context
+    @zmq_context ||= Concurrent::MVar.new(ZMQ::Context.new(1))
+  end
+
   def initialize(address: ADDRESS)
     @address = address
     @socket = open_socket
@@ -116,12 +121,14 @@ class PipelineClient
     # Although this is never used outside of this method,
     # it must be set as an instance variable so that it
     # doesn't get garbage collected accidently.
-    @context = ZMQ::Context.new(1)
 
-    @context.socket(ZMQ::REQ).tap do |socket|
-      socket.linger = 1
-      socket.connect(address)
+    socket = PipelineClient.zmq_context.borrow do |context|
+      context.socket(ZMQ::REQ)
     end
+
+    socket.linger = 1
+    socket.connect(address)
+    socket
   end
 
   def send_msg(json, timeout_ms)

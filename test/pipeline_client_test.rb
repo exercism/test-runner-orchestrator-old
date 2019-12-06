@@ -46,7 +46,7 @@ module Orchestrator
         assert_equal resp, client.run_tests(track_slug, exercise_slug, s3_uri, container_version)
 
         # See comment in PipelineClient
-        # 
+        #
         #zmq_socket.expects(:close)
         # Force GC to close socket
         #client = nil
