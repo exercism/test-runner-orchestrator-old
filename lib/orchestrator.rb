@@ -22,7 +22,7 @@ module Orchestrator
   #  - timeouts in milliseconds
   #  - container versions set to whatever is currently deployed
   TRACKS = Concurrent::Map.new
-  TRACKS[:csharp] = {timeout: 10_000, container_version: "git-bc70c4c9496503f2d9bb85d4016103210a631733"}
+  TRACKS[:csharp] = {timeout: 10_000, container_version: "git-485ff23e2250cf39f53db0669c7400d827c2abac"}
   TRACKS[:elixir] = {timeout: 10_000, container_version: "git-a8c7b8e5c1881792c4169e816c7b737b2ba7305c"}
   TRACKS[:python] = {timeout: 10_000, container_version: "git-777031cbe192bbc567fd5b5253db4b0545621e6c"}
   TRACKS[:ruby]   = {timeout: 3_000,  container_version: "git-1facd10f186abeb03f7bf076264a8f1c0a086f7b"}
