@@ -1,2 +1,4 @@
 dist: xenial
 language: ruby
+before_install:
+  - gem install bundler
