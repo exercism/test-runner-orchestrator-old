@@ -1,4 +1,6 @@
 dist: xenial
 language: ruby
 before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install libtool
   - gem install bundler
