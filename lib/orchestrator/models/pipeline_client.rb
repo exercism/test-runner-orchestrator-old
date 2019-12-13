@@ -60,7 +60,9 @@ class PipelineClient
       # container_version: "sha-122a036658c815c2024c604046692adc4c23d5c1",
     }
     timeout = Orchestrator::TRACKS[track_slug][:timeout]
-    send_recv(params, timeout)
+    params[:execution_timeout] = timeout / 1000
+    client_timeout = timeout + 2000
+    send_recv(params, client_timeout)
   end
 
   def build_container(track_slug, container_type, reference)

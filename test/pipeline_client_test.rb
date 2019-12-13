@@ -18,6 +18,7 @@ module Orchestrator
           exercise_slug: exercise_slug,
           s3_uri: s3_uri,
           container_version: container_version,
+          execution_timeout: 3
         }
         recv_result = 1
         result = {"some" => "response"}
@@ -32,8 +33,8 @@ module Orchestrator
 
         zmq_socket = mock
         zmq_socket.expects(:linger=).with(1)
-        zmq_socket.expects(:linger=).with(1500)
-        zmq_socket.expects(:rcvtimeo=).with(3000)
+        zmq_socket.expects(:linger=).with(2500)
+        zmq_socket.expects(:rcvtimeo=).with(5000)
         zmq_socket.expects(:connect).with(address)
         zmq_socket.expects(:send_message).with(message)
         zmq_socket.expects(:recv_message).returns(response_message)
@@ -57,5 +58,3 @@ module Orchestrator
     end
   end
 end
-
-
